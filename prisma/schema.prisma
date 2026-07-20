@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["zippycar"]
+}
+
+enum RideStatus {
+  ACTIVE
+  FULL
+  CANCELLED
+  COMPLETED
+
+  @@schema("zippycar")
+}
+
+enum BookingStatus {
+  PENDING
+  BOOKED
+  REJECTED
+  CANCELLED
+
+  @@schema("zippycar")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  phone         String   @unique
+  name          String?
+  expoPushToken String?
+  firebaseUid   String?  @unique
+  createdAt     DateTime @default(now())
+
+  driverProfile DriverProfile?
+  rides         Ride[]
+  bookings      Booking[]
+
+  @@map("users")
+  @@schema("zippycar")
+}
+
+model DriverProfile {
+  id        String @id @default(cuid())
+  userId    String @unique
+  carModel  String
+  carNumber String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("driver_profiles")
+  @@schema("zippycar")
+}
+
+model Ride {
+  id             String     @id @default(cuid())
+  driverId       String
+  fromCity       String
+  toCity         String
+  date           DateTime   @db.Date
+  time           String
+  pickupPoint    String     @default("")
+  totalSeats     Int
+  seatsAvailable Int
+  status         RideStatus @default(ACTIVE)
+  createdAt      DateTime   @default(now())
+
+  driver   User      @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@index([fromCity, toCity, date, status])
+  @@map("rides")
+  @@schema("zippycar")
+}
+
+model Booking {
+  id           String        @id @default(cuid())
+  rideId       String
+  riderId      String
+  status       BookingStatus @default(PENDING)
+  reminderSent Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+
+  ride  Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  rider User @relation(fields: [riderId], references: [id], onDelete: Cascade)
+
+  @@index([riderId, status])
+  @@index([rideId, status])
+  @@map("bookings")
+  @@schema("zippycar")
+}

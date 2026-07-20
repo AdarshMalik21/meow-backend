@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+firebase-service-account.json
+zippycar-*-firebase-adminsdk-*.json
+*-firebase-adminsdk-*.json
+*.log
