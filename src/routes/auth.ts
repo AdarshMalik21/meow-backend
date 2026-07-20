@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../prisma';
 import { AuthedRequest, requireAuth, signToken } from '../middleware/auth';
-import { verifyFirebaseIdToken, isFirebaseReady } from '../services/firebase';
+import { verifyFirebaseIdToken, isFirebaseReady, mapFirebaseVerifyError } from '../services/firebase';
 
 const router = Router();
 
@@ -67,8 +67,8 @@ router.post('/firebase', async (req, res) => {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Invalid login request.' });
     }
-    console.error(err);
-    return res.status(401).json({ error: 'Could not verify phone login. Try again.' });
+    console.error('Firebase login failed:', err);
+    return res.status(401).json({ error: mapFirebaseVerifyError(err) });
   }
 });
 

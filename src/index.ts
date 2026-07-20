@@ -5,7 +5,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import rideRoutes from './routes/rides';
 import bookingRoutes from './routes/bookings';
-import { initFirebaseAdmin } from './services/firebase';
+import { initFirebaseAdmin, getFirebaseProjectId } from './services/firebase';
 import { startReminderCron } from './services/reminders';
 
 const app = express();
@@ -18,6 +18,7 @@ app.get('/health', (_req, res) => {
   res.json({
     ok: true,
     firebase: initFirebaseAdmin(),
+    firebaseProject: getFirebaseProjectId(),
     devAuth: process.env.ALLOW_DEV_AUTH === 'true',
   });
 });
