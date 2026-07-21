@@ -5,7 +5,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import rideRoutes from './routes/rides';
 import bookingRoutes from './routes/bookings';
-import { initFirebaseAdmin, getFirebaseProjectId } from './services/firebase';
+import { initFirebaseAdmin, getFirebaseStatus } from './services/firebase';
 import { startReminderCron } from './services/reminders';
 
 const app = express();
@@ -15,10 +15,17 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
+  const firebase = getFirebaseStatus();
   res.json({
     ok: true,
-    firebase: initFirebaseAdmin(),
-    firebaseProject: getFirebaseProjectId(),
+    firebase: firebase.ready,
+    firebaseProject: firebase.projectId,
+    firebaseSource: firebase.credentialSource,
+    firebaseEnv: {
+      hasB64: firebase.hasB64,
+      hasJson: firebase.hasJson,
+      hasCredPath: firebase.hasCredPath,
+    },
     devAuth: process.env.ALLOW_DEV_AUTH === 'true',
   });
 });

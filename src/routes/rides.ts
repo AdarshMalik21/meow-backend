@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../prisma';
 import { AuthedRequest, requireAuth } from '../middleware/auth';
 import { isValidCity, trimCity } from '../constants';
+import { isRideDateTimePast } from '../dates';
 import { sendExpoPush } from '../services/push';
 
 const router = Router();
@@ -28,6 +29,10 @@ router.post('/', requireAuth, async (req: AuthedRequest, res) => {
     }
     if (fromCity.toLowerCase() === toCity.toLowerCase()) {
       return res.status(400).json({ error: 'From and To must be different cities.' });
+    }
+
+    if (isRideDateTimePast(body.date, body.time)) {
+      return res.status(400).json({ error: 'Cannot post a ride in the past.' });
     }
 
     const profile = await prisma.driverProfile.findUnique({
