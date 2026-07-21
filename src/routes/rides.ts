@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../prisma';
 import { AuthedRequest, requireAuth } from '../middleware/auth';
 import { isValidCity, trimCity } from '../constants';
-import { isRideDateTimePast } from '../dates';
+import { isHourSlotTooSoon, isRideDateTimePast } from '../dates';
 import { sendExpoPush } from '../services/push';
 
 const router = Router();
@@ -33,6 +33,12 @@ router.post('/', requireAuth, async (req: AuthedRequest, res) => {
 
     if (isRideDateTimePast(body.date, body.time)) {
       return res.status(400).json({ error: 'Cannot post a ride in the past.' });
+    }
+
+    if (isHourSlotTooSoon(body.date, body.time)) {
+      return res.status(400).json({
+        error: 'Cannot post a ride in the current hour. Pick a later time slot.',
+      });
     }
 
     const profile = await prisma.driverProfile.findUnique({
