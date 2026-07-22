@@ -3,7 +3,7 @@ import { RideStatus } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '../prisma';
 import { AuthedRequest, requireAuth } from '../middleware/auth';
-import { isValidCity, trimCity } from '../constants';
+import { resolveCity } from '../constants';
 import { isHourSlotTooSoon, isRideDateTimePast } from '../dates';
 import { sendExpoPush } from '../services/push';
 
@@ -21,11 +21,11 @@ router.post('/', requireAuth, async (req: AuthedRequest, res) => {
     });
     const body = schema.parse(req.body);
 
-    const fromCity = trimCity(body.fromCity);
-    const toCity = trimCity(body.toCity);
+    const fromCity = resolveCity(body.fromCity);
+    const toCity = resolveCity(body.toCity);
 
-    if (!isValidCity(fromCity) || !isValidCity(toCity)) {
-      return res.status(400).json({ error: 'Enter valid from and to cities.' });
+    if (!fromCity || !toCity) {
+      return res.status(400).json({ error: 'Pick a valid city from the list.' });
     }
     if (fromCity.toLowerCase() === toCity.toLowerCase()) {
       return res.status(400).json({ error: 'From and To must be different cities.' });
@@ -91,8 +91,12 @@ router.get('/', requireAuth, async (req: AuthedRequest, res) => {
     });
     const query = schema.parse(req.query);
 
-    const fromCity = trimCity(query.fromCity);
-    const toCity = trimCity(query.toCity);
+    const fromCity = resolveCity(query.fromCity);
+    const toCity = resolveCity(query.toCity);
+
+    if (!fromCity || !toCity) {
+      return res.status(400).json({ error: 'Pick a valid city from the list.' });
+    }
 
     const rides = await prisma.ride.findMany({
       where: {

@@ -5,6 +5,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import rideRoutes from './routes/rides';
 import bookingRoutes from './routes/bookings';
+import cityRoutes from './routes/cities';
 import { initFirebaseAdmin, getFirebaseStatus } from './services/firebase';
 import { startReminderCron } from './services/reminders';
 
@@ -34,6 +35,7 @@ app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/rides', rideRoutes);
 app.use('/bookings', bookingRoutes);
+app.use('/cities', cityRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ error: 'Not found.' });
