@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { formatRideDate } from '../dates';
 import { RideStatus } from '@prisma/client';
 import { prisma } from '../prisma';
 import { AuthedRequest, requireAuth } from '../middleware/auth';
@@ -29,10 +30,7 @@ router.get('/mine', requireAuth, async (req: AuthedRequest, res) => {
           id: b.ride.id,
           fromCity: b.ride.fromCity,
           toCity: b.ride.toCity,
-          date:
-            b.ride.date instanceof Date
-              ? b.ride.date.toISOString().slice(0, 10)
-              : String(b.ride.date).slice(0, 10),
+          date: formatRideDate(b.ride.date),
           time: b.ride.time,
           pickupPoint: b.ride.pickupPoint,
           status: b.ride.status,

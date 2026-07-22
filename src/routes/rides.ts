@@ -4,7 +4,13 @@ import { z } from 'zod';
 import { prisma } from '../prisma';
 import { AuthedRequest, requireAuth } from '../middleware/auth';
 import { resolveCity } from '../constants';
-import { isHourSlotTooSoon, isRideDateTimePast } from '../dates';
+import {
+  formatRideDate,
+  isHourSlotTooSoon,
+  isRideDateTimePast,
+  normalizeRideDate,
+} from '../dates';
+import { expandCityForSearch } from '../services/cityDirectory';
 import { sendExpoPush } from '../services/push';
 
 const router = Router();
@@ -60,7 +66,7 @@ router.post('/', requireAuth, async (req: AuthedRequest, res) => {
         driverId: req.user!.userId,
         fromCity,
         toCity,
-        date: new Date(body.date + 'T00:00:00.000Z'),
+        date: normalizeRideDate(body.date),
         time: body.time,
         pickupPoint: body.pickupPoint?.trim() ?? '',
         totalSeats: body.totalSeats,
@@ -98,11 +104,14 @@ router.get('/', requireAuth, async (req: AuthedRequest, res) => {
       return res.status(400).json({ error: 'Pick a valid city from the list.' });
     }
 
+    const fromVariants = expandCityForSearch(fromCity);
+    const toVariants = expandCityForSearch(toCity);
+
     const rides = await prisma.ride.findMany({
       where: {
-        fromCity: { equals: fromCity, mode: 'insensitive' },
-        toCity: { equals: toCity, mode: 'insensitive' },
-        date: new Date(query.date + 'T00:00:00.000Z'),
+        fromCity: { in: fromVariants, mode: 'insensitive' },
+        toCity: { in: toVariants, mode: 'insensitive' },
+        date: normalizeRideDate(query.date),
         status: RideStatus.ACTIVE,
         seatsAvailable: { gt: 0 },
       },
@@ -311,7 +320,7 @@ function serializeRide(
     id: string;
     fromCity: string;
     toCity: string;
-    date: Date;
+    date: string;
     time: string;
     pickupPoint: string;
     totalSeats: number;
@@ -328,10 +337,7 @@ function serializeRide(
   opts: { hidePhone?: boolean } = {}
 ) {
   const hidePhone = opts.hidePhone ?? false;
-  const date =
-    ride.date instanceof Date
-      ? ride.date.toISOString().slice(0, 10)
-      : String(ride.date).slice(0, 10);
+  const date = formatRideDate(ride.date);
 
   return {
     id: ride.id,

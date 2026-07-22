@@ -2,6 +2,12 @@ import citiesData from '../data/cities.json';
 
 const CITIES: readonly string[] = citiesData;
 
+/** Treat as the same city when searching rides (both names stay in the directory). */
+const SEARCH_ALIASES: Record<string, readonly string[]> = {
+  Delhi: ['New Delhi'],
+  'New Delhi': ['Delhi'],
+};
+
 /** Lowercase key → canonical display name */
 const byLower = new Map<string, string>();
 for (const name of CITIES) {
@@ -20,6 +26,12 @@ export function normalizeCity(input: string): string | null {
 
 export function isAllowedCity(input: string): boolean {
   return normalizeCity(input) !== null;
+}
+
+/** Canonical city plus aliases for ride search matching. */
+export function expandCityForSearch(canonical: string): string[] {
+  const aliases = SEARCH_ALIASES[canonical] ?? [];
+  return [canonical, ...aliases];
 }
 
 export function searchCities(query: string, limit = 15): string[] {

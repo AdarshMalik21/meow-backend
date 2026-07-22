@@ -1,4 +1,5 @@
 import cron from 'node-cron';
+import { parseRideDateTime } from '../dates';
 import { prisma } from '../prisma';
 import { sendExpoPush } from './push';
 
@@ -26,10 +27,7 @@ export function startReminderCron() {
       });
 
       for (const booking of bookings) {
-        const rideDate = booking.ride.date;
-        const [hh, mm] = booking.ride.time.split(':').map(Number);
-        const rideAt = new Date(rideDate);
-        rideAt.setHours(hh, mm, 0, 0);
+        const rideAt = parseRideDateTime(booking.ride.date, booking.ride.time);
 
         if (rideAt < windowStart || rideAt > windowEnd) continue;
         if (!booking.rider.expoPushToken) continue;

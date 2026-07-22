@@ -58,7 +58,7 @@ model Ride {
   driverId       String
   fromCity       String
   toCity         String
-  date           DateTime   @db.Date
+  date           String     @db.VarChar(10)
   time           String
   pickupPoint    String     @default("")
   totalSeats     Int
