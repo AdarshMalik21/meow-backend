@@ -26,6 +26,8 @@ router.get('/mine', requireAuth, async (req: AuthedRequest, res) => {
         id: b.id,
         status: b.status,
         createdAt: b.createdAt,
+        riderFromCity: b.riderFromCity,
+        riderToCity: b.riderToCity,
         ride: {
           id: b.ride.id,
           fromCity: b.ride.fromCity,
@@ -121,6 +123,8 @@ router.post('/:id/approve', requireAuth, async (req: AuthedRequest, res) => {
     const { booking } = result as {
       booking: {
         id: string;
+        riderFromCity: string;
+        riderToCity: string;
         rider: { expoPushToken: string | null };
         ride: {
           pickupPoint: string;
@@ -131,11 +135,15 @@ router.post('/:id/approve', requireAuth, async (req: AuthedRequest, res) => {
     };
 
     if (booking.rider.expoPushToken) {
+      const segment =
+        booking.riderFromCity && booking.riderToCity
+          ? `${booking.riderFromCity} → ${booking.riderToCity}`
+          : 'your ride';
       await sendExpoPush([
         {
           to: booking.rider.expoPushToken,
           title: 'Seat confirmed',
-          body: `Driver allowed your request. Pickup: ${booking.ride.pickupPoint} at ${booking.ride.time}`,
+          body: `Driver allowed ${segment}. Pickup: ${booking.ride.pickupPoint || booking.riderFromCity} at ${booking.ride.time}`,
           data: { bookingId: booking.id },
         },
       ]);

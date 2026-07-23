@@ -1,0 +1,219 @@
+[
+  {
+    "id": "bareilly-delhi",
+    "cities": ["Bareilly", "Rampur", "Moradabad", "Ghaziabad", "Delhi"]
+  },
+  {
+    "id": "delhi-agra",
+    "cities": ["Delhi", "Mathura", "Vrindavan", "Agra"]
+  },
+  {
+    "id": "delhi-bikaner",
+    "cities": ["Delhi", "Neemrana", "Alwar", "Jaipur", "Ajmer", "Pushkar", "Bikaner"]
+  },
+  {
+    "id": "sambhal-delhi-via-moradabad",
+    "cities": ["Sambhal", "Bilari", "Moradabad", "Garhmukteshwar", "Gajraula", "Hapur", "Ghaziabad", "Delhi"]
+  },
+  {
+    "id": "moradabad-shahjahanpur",
+    "cities": ["Moradabad", "Rampur", "Bareilly", "Shahjahanpur"]
+  },
+  {
+    "id": "moradabad-delhi-via-hapur",
+    "cities": ["Moradabad", "Amroha", "Hapur", "Ghaziabad", "Delhi"]
+  },
+  {
+    "id": "moradabad-nainital",
+    "cities": ["Moradabad", "Rampur", "Rudrapur", "Haldwani", "Nainital"]
+  },
+  {
+    "id": "moradabad-agra",
+    "cities": ["Moradabad", "Sambhal", "Bulandshahr", "Aligarh", "Mathura", "Agra"]
+  },
+  {
+    "id": "moradabad-dehradun-via-haridwar",
+    "cities": ["Moradabad", "Najibabad", "Haridwar", "Rishikesh", "Dehradun"]
+  },
+  {
+    "id": "moradabad-saharanpur",
+    "cities": ["Moradabad", "Bijnor", "Muzaffarnagar", "Roorkee", "Saharanpur"]
+  },
+  {
+    "id": "moradabad-lucknow",
+    "cities": ["Moradabad", "Pilibhit", "Sitapur", "Lucknow"]
+  },
+  {
+    "id": "moradabad-almora",
+    "cities": ["Moradabad", "Kashipur", "Ramnagar", "Ranikhet", "Almora"]
+  },
+  {
+    "id": "moradabad-kanpur",
+    "cities": ["Moradabad", "Budaun", "Farrukhabad", "Kannauj", "Kanpur"]
+  },
+  {
+    "id": "moradabad-etawah",
+    "cities": ["Moradabad", "Kasganj", "Etah", "Mainpuri", "Etawah"]
+  },
+  {
+    "id": "moradabad-modinagar-delhi",
+    "cities": ["Moradabad", "Garhmukteshwar", "Hapur", "Modinagar", "Ghaziabad", "Delhi"]
+  },
+  {
+    "id": "sambhal-delhi-via-bulandshahr",
+    "cities": ["Sambhal", "Bulandshahr", "Ghaziabad", "Delhi"]
+  },
+  {
+    "id": "moradabad-noida-via-ghaziabad",
+    "cities": ["Moradabad", "Gajraula", "Garhmukteshwar", "Hapur", "Ghaziabad", "Noida"]
+  },
+  {
+    "id": "moradabad-noida-via-roorkee",
+    "cities": [
+      "Moradabad",
+      "Kanth",
+      "Seohara",
+      "Dhampur",
+      "Purandardas",
+      "Nagina",
+      "Najibabad",
+      "Laksar",
+      "Roorkee",
+      "Saharanpur",
+      "Deoband",
+      "Muzaffarnagar",
+      "Khatauli",
+      "Meerut",
+      "Modinagar",
+      "Ghaziabad",
+      "Noida"
+    ]
+  },
+  {
+    "id": "moradabad-delhi-via-roorkee",
+    "cities": [
+      "Moradabad",
+      "Kanth",
+      "Seohara",
+      "Dhampur",
+      "Purandardas",
+      "Nagina",
+      "Najibabad",
+      "Laksar",
+      "Roorkee",
+      "Saharanpur",
+      "Deoband",
+      "Muzaffarnagar",
+      "Khatauli",
+      "Meerut",
+      "Modinagar",
+      "Ghaziabad",
+      "Delhi"
+    ]
+  },
+  {
+    "id": "moradabad-rishikesh",
+    "cities": [
+      "Moradabad",
+      "Thakurdwara",
+      "Kashipur",
+      "Bazpur",
+      "Lalkuan",
+      "Rudrapur",
+      "Kichha",
+      "Sitarganj",
+      "Khatima",
+      "Tanakpur",
+      "Nagina",
+      "Najibabad",
+      "Laksar",
+      "Haridwar",
+      "Rishikesh"
+    ]
+  },
+  {
+    "id": "moradabad-dehradun-via-kashipur",
+    "cities": [
+      "Moradabad",
+      "Thakurdwara",
+      "Kashipur",
+      "Jaspur",
+      "Nagina",
+      "Najibabad",
+      "Laksar",
+      "Haridwar",
+      "Rishikesh",
+      "Dehradun"
+    ]
+  },
+  {
+    "id": "moradabad-bhimtal",
+    "cities": ["Moradabad", "Rampur", "Bilaspur", "Rudrapur", "Haldwani", "Kathgodam", "Bhimtal"]
+  },
+  {
+    "id": "moradabad-dehradun-via-najibabad",
+    "cities": [
+      "Moradabad",
+      "Kanth",
+      "Seohara",
+      "Dhampur",
+      "Nagina",
+      "Najibabad",
+      "Laksar",
+      "Haridwar",
+      "Dehradun"
+    ]
+  },
+  {
+    "id": "delhi-mussoorie",
+    "cities": ["Delhi", "Haridwar", "Rishikesh", "Dehradun", "Mussoorie"]
+  },
+  {
+    "id": "delhi-nainital",
+    "cities": ["Delhi", "Ramnagar", "Nainital"]
+  },
+  {
+    "id": "delhi-amritsar-via-hills",
+    "cities": ["Delhi", "Chandigarh", "Kasauli", "Solan", "Shimla", "Manali", "Dharamshala", "McLeod Ganj", "Amritsar"]
+  },
+  {
+    "id": "delhi-dehradun",
+    "cities": ["Delhi", "Meerut", "Muzaffarnagar", "Roorkee", "Haridwar", "Dehradun"]
+  },
+  {
+    "id": "delhi-shahjahanpur",
+    "cities": ["Delhi", "Hapur", "Moradabad", "Rampur", "Bareilly", "Shahjahanpur"]
+  },
+  {
+    "id": "delhi-firozabad",
+    "cities": ["Delhi", "Faridabad", "Palwal", "Kosi Kalan", "Mathura", "Agra", "Firozabad"]
+  },
+  {
+    "id": "delhi-amritsar-via-punjab",
+    "cities": ["Delhi", "Sonipat", "Panipat", "Karnal", "Kurukshetra", "Ambala", "Ludhiana", "Jalandhar", "Amritsar"]
+  },
+  {
+    "id": "delhi-sirsa",
+    "cities": ["Delhi", "Bahadurgarh", "Rohtak", "Hisar", "Sirsa"]
+  },
+  {
+    "id": "delhi-jhunjhunu",
+    "cities": ["Delhi", "Gurugram", "Rewari", "Narnaul", "Mahendragarh", "Jhunjhunu"]
+  },
+  {
+    "id": "delhi-ambala",
+    "cities": ["Delhi", "Baghpat", "Shamli", "Saharanpur", "Yamunanagar", "Ambala"]
+  },
+  {
+    "id": "delhi-etawah",
+    "cities": ["Delhi", "Bulandshahr", "Aligarh", "Etah", "Mainpuri", "Etawah"]
+  },
+  {
+    "id": "delhi-almora",
+    "cities": ["Delhi", "Hapur", "Garhmukteshwar", "Moradabad", "Haldwani", "Almora"]
+  },
+  {
+    "id": "delhi-sikar",
+    "cities": ["Delhi", "Bhiwani", "Loharu", "Churu", "Ratangarh", "Sikar"]
+  }
+]

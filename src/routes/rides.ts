@@ -11,6 +11,7 @@ import {
   normalizeRideDate,
 } from '../dates';
 import { expandCityForSearch } from '../services/cityDirectory';
+import { riderMatchesRide, validatePickupStops } from '../services/routeCorridors';
 import { sendExpoPush } from '../services/push';
 
 const router = Router();
@@ -23,6 +24,7 @@ router.post('/', requireAuth, async (req: AuthedRequest, res) => {
       date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
       time: z.string().regex(/^\d{2}:\d{2}$/),
       pickupPoint: z.string().max(120).optional(),
+      pickupStops: z.array(z.string().min(2).max(80)).optional(),
       totalSeats: z.number().int().min(1).max(7),
     });
     const body = schema.parse(req.body);
@@ -61,6 +63,15 @@ router.post('/', requireAuth, async (req: AuthedRequest, res) => {
       return res.status(400).json({ error: 'Add your name before posting a ride.' });
     }
 
+    const stopResult = validatePickupStops(
+      fromCity,
+      toCity,
+      body.pickupStops ?? []
+    );
+    if (!stopResult.ok) {
+      return res.status(400).json({ error: stopResult.error });
+    }
+
     const ride = await prisma.ride.create({
       data: {
         driverId: req.user!.userId,
@@ -69,6 +80,8 @@ router.post('/', requireAuth, async (req: AuthedRequest, res) => {
         date: normalizeRideDate(body.date),
         time: body.time,
         pickupPoint: body.pickupPoint?.trim() ?? '',
+        pickupStops: stopResult.pickupStops,
+        corridorId: stopResult.corridorId,
         totalSeats: body.totalSeats,
         seatsAvailable: body.totalSeats,
         status: RideStatus.ACTIVE,
@@ -107,13 +120,16 @@ router.get('/', requireAuth, async (req: AuthedRequest, res) => {
     const fromVariants = expandCityForSearch(fromCity);
     const toVariants = expandCityForSearch(toCity);
 
-    const rides = await prisma.ride.findMany({
+    const candidates = await prisma.ride.findMany({
       where: {
-        fromCity: { in: fromVariants, mode: 'insensitive' },
-        toCity: { in: toVariants, mode: 'insensitive' },
         date: normalizeRideDate(query.date),
         status: RideStatus.ACTIVE,
         seatsAvailable: { gt: 0 },
+        toCity: { in: toVariants, mode: 'insensitive' },
+        OR: [
+          { fromCity: { in: fromVariants, mode: 'insensitive' } },
+          { pickupStops: { hasSome: fromVariants } },
+        ],
       },
       include: {
         driver: { include: { driverProfile: true } },
@@ -121,9 +137,15 @@ router.get('/', requireAuth, async (req: AuthedRequest, res) => {
       orderBy: { time: 'asc' },
     });
 
-    return res.json({
-      rides: rides.map((r) => serializeRide(r, { hidePhone: true })),
-    });
+    const rides = candidates
+      .map((r) => {
+        const matchType = riderMatchesRide(r, fromCity, toCity);
+        if (!matchType) return null;
+        return serializeRide(r, { hidePhone: true, matchType });
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null);
+
+    return res.json({ rides });
   } catch (err) {
     if (err instanceof z.ZodError) {
       return res.status(400).json({ error: 'Enter from city, to city, and date.' });
@@ -159,6 +181,8 @@ router.get('/mine', requireAuth, async (req: AuthedRequest, res) => {
           id: b.id,
           status: b.status,
           createdAt: b.createdAt,
+          riderFromCity: b.riderFromCity,
+          riderToCity: b.riderToCity,
           rider: {
             id: b.rider.id,
             name: b.rider.name,
@@ -236,6 +260,12 @@ router.post('/:id/book', requireAuth, async (req: AuthedRequest, res) => {
     const rideId = req.params.id;
     const riderId = req.user!.userId;
 
+    const bodySchema = z.object({
+      riderFromCity: z.string().min(2).max(80).optional(),
+      riderToCity: z.string().min(2).max(80).optional(),
+    });
+    const body = bodySchema.parse(req.body ?? {});
+
     const result = await prisma.$transaction(async (tx) => {
       const ride = await tx.ride.findUnique({
         where: { id: rideId },
@@ -252,6 +282,26 @@ router.post('/:id/book', requireAuth, async (req: AuthedRequest, res) => {
       }
       if (ride.status !== 'ACTIVE' || ride.seatsAvailable < 1) {
         return { error: 'No seats left on this ride.', status: 409 as const };
+      }
+
+      const riderFrom = body.riderFromCity ? resolveCity(body.riderFromCity) : null;
+      const riderTo = body.riderToCity ? resolveCity(body.riderToCity) : null;
+
+      if (body.riderFromCity && !riderFrom) {
+        return { error: 'Pick a valid pickup city from the list.', status: 400 as const };
+      }
+      if (body.riderToCity && !riderTo) {
+        return { error: 'Pick a valid destination city from the list.', status: 400 as const };
+      }
+
+      if (riderFrom && riderTo) {
+        const matchType = riderMatchesRide(ride, riderFrom, riderTo);
+        if (!matchType) {
+          return {
+            error: 'This ride does not match your route.',
+            status: 400 as const,
+          };
+        }
       }
 
       const existing = await tx.booking.findFirst({
@@ -272,30 +322,42 @@ router.post('/:id/book', requireAuth, async (req: AuthedRequest, res) => {
       }
 
       const booking = await tx.booking.create({
-        data: { rideId, riderId, status: 'PENDING' },
+        data: {
+          rideId,
+          riderId,
+          status: 'PENDING',
+          riderFromCity: riderFrom ?? '',
+          riderToCity: riderTo ?? '',
+        },
       });
 
-      return { booking, ride };
+      return { booking, ride, riderFrom, riderTo };
     });
 
     if ('error' in result && result.error) {
       return res.status(result.status).json({ error: result.error });
     }
 
-    const { booking, ride } = result as {
+    const { booking, ride, riderFrom, riderTo } = result as {
       booking: { id: string; status: string };
       ride: Parameters<typeof serializeRide>[0] & {
         driver: { expoPushToken?: string | null; name: string | null };
       };
+      riderFrom: string | null;
+      riderTo: string | null;
     };
 
     const driverPushToken = ride.driver.expoPushToken;
     if (driverPushToken) {
+      const segment =
+        riderFrom && riderTo
+          ? `${riderFrom} → ${riderTo}`
+          : 'a seat on your ride';
       await sendExpoPush([
         {
           to: driverPushToken,
           title: 'New seat request',
-          body: 'A rider asked for a seat. Open My Rides to Allow or Decline.',
+          body: `Rider wants ${segment}. Open My Rides to Allow or Decline.`,
           data: { rideId: ride.id, bookingId: booking.id },
         },
       ]);
@@ -305,15 +367,25 @@ router.post('/:id/book', requireAuth, async (req: AuthedRequest, res) => {
       booking: {
         id: booking.id,
         status: 'PENDING',
+        riderFromCity: riderFrom ?? '',
+        riderToCity: riderTo ?? '',
         ride: serializeRide(ride, { hidePhone: true }),
       },
       message: 'Request sent. Waiting for driver.',
     });
   } catch (err) {
+    if (err instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid booking request.' });
+    }
     console.error(err);
     return res.status(500).json({ error: 'Could not send request. Try again.' });
   }
 });
+
+type SerializeOpts = {
+  hidePhone?: boolean;
+  matchType?: 'exact' | 'viaStop';
+};
 
 function serializeRide(
   ride: {
@@ -323,6 +395,8 @@ function serializeRide(
     date: string;
     time: string;
     pickupPoint: string;
+    pickupStops?: string[];
+    corridorId?: string | null;
     totalSeats: number;
     seatsAvailable: number;
     status: RideStatus;
@@ -334,7 +408,7 @@ function serializeRide(
       driverProfile: { carModel: string; carNumber: string } | null;
     };
   },
-  opts: { hidePhone?: boolean } = {}
+  opts: SerializeOpts = {}
 ) {
   const hidePhone = opts.hidePhone ?? false;
   const date = formatRideDate(ride.date);
@@ -346,6 +420,8 @@ function serializeRide(
     date,
     time: ride.time,
     pickupPoint: ride.pickupPoint,
+    pickupStops: ride.pickupStops ?? [],
+    matchType: opts.matchType,
     totalSeats: ride.totalSeats,
     seatsAvailable: ride.seatsAvailable,
     status: ride.status,

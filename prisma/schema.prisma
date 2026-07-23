@@ -61,6 +61,8 @@ model Ride {
   date           String     @db.VarChar(10)
   time           String
   pickupPoint    String     @default("")
+  pickupStops    String[]   @default([])
+  corridorId     String?
   totalSeats     Int
   seatsAvailable Int
   status         RideStatus @default(ACTIVE)
@@ -75,12 +77,14 @@ model Ride {
 }
 
 model Booking {
-  id           String        @id @default(cuid())
-  rideId       String
-  riderId      String
-  status       BookingStatus @default(PENDING)
-  reminderSent Boolean       @default(false)
-  createdAt    DateTime      @default(now())
+  id            String        @id @default(cuid())
+  rideId        String
+  riderId       String
+  riderFromCity String        @default("")
+  riderToCity   String        @default("")
+  status        BookingStatus @default(PENDING)
+  reminderSent  Boolean       @default(false)
+  createdAt     DateTime      @default(now())
 
   ride  Ride @relation(fields: [rideId], references: [id], onDelete: Cascade)
   rider User @relation(fields: [riderId], references: [id], onDelete: Cascade)
